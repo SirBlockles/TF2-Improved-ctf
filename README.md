@@ -1,5 +1,5 @@
-# TF2-Improved-ctf (Updated 5/13/20)
-### Version b3.3
+# TF2-Improved-ctf (Updated 7/4/21)
+### Version b4
 Tired of needing to defend an intel for 60 second whole seconds before it returns? Do you know how many scouts can throw their bodies at it in that time? Improved CTF is here to help
 
 ## What does it do?
@@ -24,3 +24,34 @@ sm_ictf_hud_text - Enables/disables on-screen text for a flag's capture rate (De
 ## Planned features
 - Wider gamemode support
 - Custom weapon capture rate support
+
+## Changelog
+```
+Version b3.3.2 (July 4, 2021)
+- Internal code cleanup
+  - Updated to newdecls
+  - replaced hard #defined red and blu team indexes with native TFTeam type, making certain logic easier to read
+  - added semicolons where there were none for consistency's sake
+
+Version b3.3.1 (5/13/20)
+- Added custom HUD text to show the flag's current capture rate. Shown only when a flag is down and on the screen at the bottom next to the flag status
+- Added cvar "sm_ictf_hud_text" to give the option to disable HUD text for all players
+- Fixed The Pain Train not giving the 2x capture rate on flags
+- Fixed beam ring not being representative of the flag's true capture radius
+- Adjusted default beam ring size to compensate being bigger than intended
+- Updated syntax
+
+Version b3.2 (4/30/20)
+- Fixed players being able to return the flag while cloaked, ubercharged, bonked, ect.
+- Improved code readability
+
+Version b3.1
+- Improved code readability
+- Privated unnecessarily public functions
+- Flag timer can now be a decimal
+
+Version b3.0
+- First public version
+- Changed the flag capture indicator from a jank hexagon to a circle
+- Capture area will now disappear instantly when the flag is returned
+```
