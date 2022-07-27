@@ -1,32 +1,75 @@
-# TF2-Improved-ctf (Updated 7/4/21)
-### Version b4
-Tired of needing to defend an intel for 60 second whole seconds before it returns? Do you know how many scouts can throw their bodies at it in that time? Improved CTF is here to help
+# Improved CTF (iCTF)
+iCTF aims to improve CTF by implementing additional gameplay mechanics that make the gamemode less defensive and encourages teamplay. this plugin originally started as a fork of [Ribbon Heart's iCTF](https://forums.alliedmods.net/showthread.php?t=323866), but most of the code has since been rewritten or refactored. additionally, some secondary mechanics and stats have been added, inspired by the SmartCTF mod from Unreal Tournament '99.
 
-## What does it do?
-Allows players of the same team (or opposite teams in Special Delivery) to stand within a visualized capture radius of a flag to speed up the return time. This capture speed is impacted by number of players within the flag's radius along with vanilla methods of increasing capture rate (Scout and The Pain Train). Admins can also modify the default flag timer and more to suit their server's preference.
+## features
+### flag returning
+when dropped, the flag has a "return zone" around it that can be interacted with by players:
+* friendly players standing on the flag will make its return timer count down faster, allowing them to "capture-return" it.
+* a defender returning the flag also makes it non-solid, preventing an enemy from running by and resetting the return time as long as a defender is standing on it.
+* enemy players standing on the flag will prevent the timer from going down at all, effectively blocking defenders from returning it until they are dealt with.
 
-## Installation
-This plugin requires Sourcemod and only works with Team Fortress 2
+additionally, the flag by default takes 25 seconds to return without defensive intervention, (default CTF flags take 60 sec) this can be adjusted, though.
 
-Place the included .SMX file into your server's `tf/addons/sourcemod/plugins` folder. On server or plugin startup, "Improved CTF enabled" should print to your server's console.
+### capture assist system
+vanilla TF2's "capture assist" system in CTF is garbage. by default, the first player to pick up the flag from the enemy base is credited with the assist if another player goes on to capture it. this means if player 1 grabs the flag, immediately dies, then player 2 comes in and gets it out of the base and dies, then player 3 finishes the capture, player 1 gets the assist despite the fact that player 2 carried it more and contributed more to the capture.
 
-## Customization
-Improved CTF includes several Cvars to help you make your gameplay just right.
+iCTF instead keeps track of how long each player carried the flag during its time out until its capture, and awards the assist that way. the player who carried the flag the longest (or, if that player is also the capper, the player who carried it the second-longest) is awarded the assist point, instead of arbitrarily giving it to the player who grabbed it first.
+### cover-kill system
+a mechanic straight from UT99's SmartCTF. a cover kill is a kill that defends your flag carrier as defined by any of the following criteria being met:
+* you are the flagcarrier and are defending yourself
+* enemy is within 512 Hu (Hammer units) of the flagcarrier
+* you are within 256 Hu of the flagcarrier
+* enemy is within 1536 Hu of the flagcarrier, has line-of-sight on the flagcarrier, and is looking in their direction
+* enemy is within 768 Hu of the flagcarrier, has line-of-sight on the flagcarrier, but is NOT looking in their direction
+* enemy is within 1024 Hu of the flagcarrier, and you have line-of-sight on the flagcarrier
+* enemy is within 3200 Hu of the flagcarrier, has line-of-sight on the flagcarrier, and is a sniper aiming at them
+
+if any of these conditions are met, you will have covered your flagcarrier. all it does for now is add a little HUD notice to make you look cool, it doesn't actually give any support or defense points.
+## dependencies
+[TF2Items](https://forums.alliedmods.net/showthread.php?p=1050170) - checks equipped weapons for capture rate bonus attribute (paintrain, as well as support for custom weapons)
+
+
+## cvars & configuration
+values in `[brackets]` are the default for the CVAR
+`sm_ictf_cap_time [25]` - time, in seconds, that the flag will take to return once dropped, without any player intervention. overrides the default map drop time.
+
+`sm_ictf_cap_bonus [0.25]` - how much time to take off the return timer for every capture rate returning the flag.
+
+`sm_ictf_cap_radius [115]` - radius of the return area around the dropped flag.
+
+`sm_ictf_cap_carrierbonus [1]` - if you're carrying the enemy flag while returning your own, you gain this much extra capture rate (eg a value of 1 means a scout carrying the flag has a capture rate of x3 while returning his own flag, while everyone else is x2)
+
+`sm_ictf_cap_hud <0/[1]>` - enable/disable the HUD elements showing the return time left and the capture rate for dropped flags.
+
+`sm_ictf_cap_visualizer <0/1/[2]>` - controls visual indicators around dropped flags.  
+0: disabled entirely (no visualizer)  
+1: the outer ring is the capture area, the inner ring shrinks as the return time decreases. (old visualizer)  
+2: the inner  and outer ring both do not move, and the visualizer is basically a "holographic control point."  
+
+`sm_ictf_cap_assist <0/[1]>` - enable/disable the custom carry-time based assist system.
+
+`sm_ictf_coverkills <0/[1]>` - enable/disable the cover-kill system.
+## planned features
+* round timer & overtime mechanics so that rounds don't last 45 minutes
+* output additional log events for competitive log parsers (returns, saves, covers, cap assists, etc)
+* stop being lazy and keep track of players who return the flag for some extra systems
+  * "close save" system from SmartCTF (returns near enemy capture zone)
+  * "\<player\> defended the intelligence!" killfeed notices for returns, maybe? 
+
+## changelog
 ```
-sm_ictf_version - Prints the installed version of Improved CTF
-sm_ictf_enable - Set to 0 to disable ICTF. Set to 1 to enable. (Default: 1)
-sm_ictf_flag_time - Sets the initial time, in seconds, until the flag is returned. (Default: 30)
-sm_ictf_cap_multiplier - Determines how much capping players effect the return time, as a decimal representing percentage. (Default: 0.6)
-sm_ictf_cap_radius - Determines the distance, in hammer units, from the flag players can return it. Changes the ring visual to match. (Default: 100.0)
-sm_ictf_hud_text - Enables/disables on-screen text for a flag's capture rate (Default: 1)
-```
+ver 2.0 (JUL 26, 2022)
+> near-complete rewrite. restarted version numbering at v2.0 to keep things easy.
+>> return timer now uses the entity's timer and SDK think function instead of maintaining internal SM timers, resulting in much smoother timekeeping
+>> return time left is now displayed on the HUD alongside capture rate
+>> visualizer runs more smoothly and has alternate mode that does not animate
+>> defenders returning their flag prevent enemies from being able to pick it up
+>> conversely, enemies standing on your flag block the return timer from advancing
+>> capture rate supports custom weapons with capture rate bonus attribtue
+>> players carrying an enemy flag gain a +1 capture bonus towards returning their own
+>> added custom assist system that awards the assist point to the player who carried it the longest besides the capper
+>> added cover-kill system that shows HUD notifications when players defend their friendly flagcarrier
 
-## Planned features
-- Wider gamemode support
-- Custom weapon capture rate support
-
-## Changelog
-```
 Version b3.3.2 (July 4, 2021)
 - Internal code cleanup
   - Updated to newdecls
